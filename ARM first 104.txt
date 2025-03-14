@@ -1,0 +1,129 @@
+Exercise - Create and deploy an Azure Resource Manager template
+
+we will have two sub one called Microsoft Learn Sandbox. and Concierge Subscription 
+In this exercise, we create an Azure Resource Manager (ARM) template, deploy it to Azure, and then update that ARM template to add parameters and outputs.
+
+We need to have VS and also ARM extenstion in VS
+
+================
+Create an ARM template
+
+1. Open Visual Studio Code and create a new file called azuredeploy.json.
+and inside this file I typed arm and enter and the json code will pup up like this :
+
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {},
+  "functions": [],
+  "variables": {},
+  "resources": [],
+  "outputs": {}
+}
+
+=========================
+Sign in to Azure by using Azure powershell 
+
+
+when I tried to run the following commend "Connect-AzAccount" I got error below 
+
+Connect-AzAccount : Method 'get_SerializationSettings' in type '
+Microsoft.Azure.Management.Internal.Resources.ResourceManagement
+Client' from assembly 
+'Microsoft.Azure.PowerShell.Clients.ResourceManager, 
+Version=1.0.0.0, Culture=neutral, 
+PublicKeyToken=31bf3856ad364e35' does not have an 
+implementation.
+At line:1 char:1
++ Connect-AzAccount
++ ~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [Connect-AzAcco 
+   unt], TypeLoadException
+    + FullyQualifiedErrorId : System.TypeLoadException,Microsof 
+   t.Azure.Commands.Profile.ConnectAzureRmAccountCommand
+
+
+It looks like you're encountering a TypeLoadException when trying to run the Connect-AzAccount command in PowerShell. This issue is often related to compatibility problems with the installed versions of the Az modules.
+
+Here are a few solutions you can try:
+
+Use PowerShell 7: Switching from Windows PowerShell 5.1 to PowerShell 7 can resolve many compatibility issues1.
+Install specific versions of Az modules: You can install Az.Accounts version 2.12.1 and Az.Resources version 6.6.0, which are known to work without this error1.
+Remove incompatible module versions: Ensure that any previously installed incompatible versions of the Az modules are removed1.
+To install the specific versions of the Az modules, you can use the following commands:
+
+
+Uninstall-Module -Name Az -AllVersions
+Install-Module -Name Az.Accounts -RequiredVersion 2.12.1
+Install-Module -Name Az.Resources -RequiredVersion 6.6.0
+
+After installing the modules, try running Connect-AzAccount again.
+
+
+and it Works 
+
+After that I had to set the defult sub 
+
+$context = Get-AzSubscription -SubscriptionId {Your subscription ID}
+Set-AzContext $context
+
+and I also set defult resourc group
+
+Set-AzDefault -ResourceGroupName learn-2015c248-7aaf-480a-b49c-f70f58e15b79
+
+
+===============
+Deploy the template to Azure
+
+$templateFile="azuredeploy.json"
+$today=Get-Date -Format "MM-dd-yyyy"
+$deploymentName="blanktemplate-"+"$today"
+New-AzResourceGroupDeployment -Name $deploymentName -TemplateFile $templateFile
+
+
+and we can change the ARM template and update it like this:
+
+In the azuredeploy.json file in Visual Studio Code, place your cursor inside the brackets in the resources block "resources":[],.
+
+Enter storage inside the brackets. A list of related snippets appears. Select arm-storage.
+
+
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {},
+  "functions": [],
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-05-01",
+      "name": "storageaccount1",
+      "tags": {
+        "displayName": "storageaccount1"
+      },
+      "location": "[resourceGroup().location]",
+      "kind": "StorageV2",
+      "sku": {
+        "name": "Premium_LRS"
+      }
+    }
+  ],
+  "outputs": {}
+}
+
+
+
+
+
+and I can chnage the name of the storage account and also for SUK 
+
+================
+and Deploy the update ARM tempalet 
+
+$templateFile="azuredeploy.json"
+$today=Get-Date -Format "MM-dd-yyyy"
+$deploymentName="addstorage-"+"$today"
+New-AzResourceGroupDeployment -Name $deploymentName -TemplateFile $templateFile
+
+
